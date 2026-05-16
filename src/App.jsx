@@ -34,8 +34,11 @@ function App() {
   const [userAnswer, setUserAnswer] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // VOICE STATE - PUDHUSA ADD PANROM 🎤
+  // VOICE STATE - USER KU 🎤
   const [listening, setListening] = useState(false)
+
+  // AI VOICE STATE - PUDHUSA 🔊
+  const [speaking, setSpeaking] = useState(false)
 
   // SCORE CARD STATES
   const [score, setScore] = useState(null)
@@ -48,26 +51,43 @@ function App() {
     }
   }
 
-  // VOICE FUNCTION - PUDHUSA 🎤
+  // AI KU VAAI KUDUKUM FUNCTION 🔊 PUDHUSA
+  const speakText = (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+
+      const utterance = new SpeechSynthesisUtterance(text)
+      utterance.rate = 0.95
+      utterance.pitch = 1
+      utterance.lang = 'en-US'
+
+      utterance.onstart = () => setSpeaking(true)
+      utterance.onend = () => setSpeaking(false)
+
+      window.speechSynthesis.speak(utterance)
+    }
+  }
+
+  // USER VOICE FUNCTION 🎤
   const startListening = () => {
     if (!('webkitSpeechRecognition' in window)) {
       alert('Browser la Voice support illa da. Chrome la try pannu')
       return
     }
-    
+
     const recognition = new window.webkitSpeechRecognition()
     recognition.lang = 'en-US'
     recognition.continuous = false
     recognition.interimResults = false
-    
+
     recognition.onstart = () => setListening(true)
-    
+
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript
-      setUserAnswer(prev => prev + ' ' + transcript)
+      setUserAnswer(prev => prev? prev + ' ' + transcript : transcript)
       setListening(false)
     }
-    
+
     recognition.onerror = (event) => {
       console.error('Voice Error:', event.error)
       setListening(false)
@@ -75,7 +95,7 @@ function App() {
         alert('Mic Permission kuduka sollu da. Site settings la Allow pannu')
       }
     }
-    
+
     recognition.onend = () => setListening(false)
     recognition.start()
   }
@@ -100,16 +120,19 @@ Tip: Use STAR method (Situation, Task, Action, Result) for behavioral questions`
     if (!userAnswer.trim()) return
 
     setLoading(true)
+    window.speechSynthesis.cancel() // AI pesa try panna stop pannu
 
     const newConversation = [...conversation, { role: 'user', text: userAnswer }]
     setConversation(newConversation)
     setUserAnswer('')
 
     setTimeout(() => {
+      const aiResponse = 'That\'s a good answer! Next question: Explain React hooks.'
       setConversation([...newConversation, {
         role: 'ai',
-        text: 'That\'s a good answer! Next question: Explain React hooks.'
+        text: aiResponse
       }])
+      speakText(aiResponse) // AI AH PESAVA VAI DA 🔥
       setLoading(false)
     }, 1500)
   }
@@ -117,6 +140,7 @@ Tip: Use STAR method (Situation, Task, Action, Result) for behavioral questions`
   // END INTERVIEW + SCORE FUNCTION
   const handleEndInterview = async () => {
     setLoading(true)
+    window.speechSynthesis.cancel()
 
     const fullConversation = conversation.map(msg =>
       `${msg.role === 'user'? 'Candidate' : 'Interviewer'}: ${msg.text}`
@@ -237,7 +261,7 @@ Tip:...`
     )
   }
 
-  // INTERVIEW PAGE - VOICE BUTTON ADD PANNIRUKEN 🎤
+  // INTERVIEW PAGE - FULL SCREEN UI UPDATE PANNIRUKEN 🔥
   if (currentPage === 'interview') {
     return (
       <div className="interview-container">
@@ -245,7 +269,7 @@ Tip:...`
           {darkMode? '☀️ Light' : '🌙 Dark'}
         </button>
 
-        <h1>AI Mock Interview</h1>
+        <h1>AI Mock Interview {speaking && '🔊'}</h1>
 
         <div className="chat-box">
           {conversation.map((msg, index) => (
@@ -284,22 +308,26 @@ Tip:...`
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
             disabled={loading}
+            rows={4}
           />
-          
-          <button
-            onClick={startListening}
-            disabled={listening || loading}
-            className="voice-btn"
-          >
-            {listening? '🔴 Listening...' : '🎤 Speak'}
-          </button>
 
-          <button
-            onClick={handleSubmitAnswer}
-            disabled={loading ||!userAnswer}
-          >
-            {loading? 'Sending...' : 'Submit'}
-          </button>
+          <div className="button-group">
+            <button
+              onClick={startListening}
+              disabled={listening || loading}
+              className="voice-btn"
+            >
+              {listening? '🔴 Listening...' : '🎤 Speak'}
+            </button>
+
+            <button
+              onClick={handleSubmitAnswer}
+              disabled={loading ||!userAnswer}
+              className="submit-btn"
+            >
+              {loading? 'Sending...' : 'Submit'}
+            </button>
+          </div>
         </div>
       </div>
     )
