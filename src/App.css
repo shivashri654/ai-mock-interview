@@ -1,0 +1,214 @@
+/* DARK/LIGHT THEME COLORS */
+body.light {
+  --bg: #f0f2f5;
+  --card-bg: white;
+  --text: #1a1a1a;
+  --border: #d9d9d9;
+  --input-bg: white;
+  --btn-bg: #1677ff;
+  --btn-hover: #4096ff;
+}
+
+body.dark {
+  --bg: #141414;
+  --card-bg: #1f1f1f;
+  --text: #e0e0e0;
+  --border: #424242;
+  --input-bg: #2a2a2a;
+  --btn-bg: #1677ff;
+  --btn-hover: #4096ff;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition: all 0.3s ease;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* LOGIN PAGE - CLEAN CENTER CARD */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.login-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  font-weight: 700;
+}
+
+/* INPUT + BUTTON WRAPPER */
+.login-container input,
+.login-container button {
+  width: 100%;
+  max-width: 350px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.login-container input {
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  outline: none;
+  transition: border 0.2s;
+}
+
+.login-container input:focus {
+  border: 1px solid var(--btn-bg);
+}
+
+.login-container button {
+  background: var(--btn-bg);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+.login-container button:hover {
+  background: var(--btn-hover);
+}
+
+/* THEME TOGGLE BUTTON */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+  z-index: 999;
+  width: auto !important;
+  max-width: none !important;
+}
+
+/* SETUP + INTERVIEW PAGE KU IDHE STYLE */
+.setup-container, .interview-container {
+  background: var(--card-bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+/* CHAT MESSAGES */
+.user-msg, .ai-msg {
+  max-width: 70%;
+  padding: 12px 16px;
+  margin: 8px 0;
+  border-radius: 12px;
+  line-height: 1.5;
+}
+
+.user-msg {
+  background: var(--btn-bg);
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+}
+
+.ai-msg {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  margin-right: auto;
+  border-bottom-left-radius: 4px;
+}
+
+/* LOADING SKELETON ANIMATION */
+.skeleton-wrapper {
+  width: 60%;
+}
+
+.skeleton-line {
+  height: 14px;
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    var(--bg) 50%,
+    var(--border) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeleton-line.short {
+  width: 60%;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+/* PAGE FADE-IN ANIMATION */
+.login-container, .setup-container, .interview-container {
+  animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* BUTTON HOVER ANIMATIONS */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0px);
+}
+
+/* THEME TOGGLE BUTTON KU SPECIAL HOVER */
+.theme-toggle:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* CHAT MESSAGE POP-IN */
+.user-msg, .ai-msg {
+  animation: messagePop 0.3s ease-out;
+}
+
+@keyframes messagePop {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* INPUT FOCUS GLOW */
+input:focus, textarea:focus {
+  border: 1px solid var(--btn-bg) !important;
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+}
