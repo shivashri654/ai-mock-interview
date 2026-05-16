@@ -34,7 +34,10 @@ function App() {
   const [userAnswer, setUserAnswer] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // SCORE CARD STATES - PUDHUSA ADD PANNIRUKEN
+  // VOICE STATE - PUDHUSA ADD PANROM 🎤
+  const [listening, setListening] = useState(false)
+
+  // SCORE CARD STATES
   const [score, setScore] = useState(null)
   const [feedback, setFeedback] = useState('')
   const [showScorePage, setShowScorePage] = useState(false)
@@ -45,10 +48,41 @@ function App() {
     }
   }
 
+  // VOICE FUNCTION - PUDHUSA 🎤
+  const startListening = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert('Browser la Voice support illa da. Chrome la try pannu')
+      return
+    }
+    
+    const recognition = new window.webkitSpeechRecognition()
+    recognition.lang = 'en-US'
+    recognition.continuous = false
+    recognition.interimResults = false
+    
+    recognition.onstart = () => setListening(true)
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript
+      setUserAnswer(prev => prev + ' ' + transcript)
+      setListening(false)
+    }
+    
+    recognition.onerror = (event) => {
+      console.error('Voice Error:', event.error)
+      setListening(false)
+      if(event.error === 'not-allowed') {
+        alert('Mic Permission kuduka sollu da. Site settings la Allow pannu')
+      }
+    }
+    
+    recognition.onend = () => setListening(false)
+    recognition.start()
+  }
+
   // UN OPENAI API CALL FUNCTION INGA PODU - PLACEHOLDER
   const callOpenAI = async (prompt) => {
     // NEE UN API KEY + FETCH CODE INGA PODANUM
-    // TEMPORARY MOCK RESPONSE FOR TESTING
     return `Score: 8.5/10
 Strengths:
 - Clear communication skills
@@ -61,19 +95,16 @@ Weaknesses:
 Tip: Use STAR method (Situation, Task, Action, Result) for behavioral questions`
   }
 
-  // SUBMIT ANSWER FUNCTION - UN OLD CODE IRUNDHA ADHA VAI
+  // SUBMIT ANSWER FUNCTION
   const handleSubmitAnswer = async () => {
     if (!userAnswer.trim()) return
 
     setLoading(true)
 
-    // User message add pannu
     const newConversation = [...conversation, { role: 'user', text: userAnswer }]
     setConversation(newConversation)
     setUserAnswer('')
 
-    // AI RESPONSE - UN OLD API CALL INGA IRUKUM
-    // TEMPORARY MOCK:
     setTimeout(() => {
       setConversation([...newConversation, {
         role: 'ai',
@@ -83,7 +114,7 @@ Tip: Use STAR method (Situation, Task, Action, Result) for behavioral questions`
     }, 1500)
   }
 
-  // END INTERVIEW + SCORE FUNCTION - PUDHUSA
+  // END INTERVIEW + SCORE FUNCTION
   const handleEndInterview = async () => {
     setLoading(true)
 
@@ -108,10 +139,8 @@ Tip:...`
 
     try {
       const response = await callOpenAI(prompt)
-
       const scoreMatch = response.match(/Score:\s*(\d+\.?\d*)\/10/i)
       const extractedScore = scoreMatch? scoreMatch[1] : '0'
-
       setScore(extractedScore)
       setFeedback(response)
       setShowScorePage(true)
@@ -151,7 +180,7 @@ Tip:...`
     )
   }
 
-  // SCORE PAGE - PUDHUSA ADD PANNIRUKEN
+  // SCORE PAGE - REWARD SYSTEM 🏆
   if (showScorePage) {
     return (
       <div className="score-container">
@@ -166,6 +195,13 @@ Tip:...`
             <span className="score-number">{score}</span>
             <span className="score-total">/10</span>
           </div>
+
+          {parseFloat(score) >= 8.5 && (
+            <p className="badge-text">🏆 You earned a Gold Badge!</p>
+          )}
+          {parseFloat(score) >= 7 && parseFloat(score) < 8.5 && (
+            <p className="badge-text">🥈 You earned a Silver Badge!</p>
+          )}
 
           <div className="feedback-box">
             <pre>{feedback}</pre>
@@ -187,7 +223,7 @@ Tip:...`
     )
   }
 
-  // HOME/SETUP PAGE - UN CODE INGA PODU
+  // HOME/SETUP PAGE
   if (currentPage === 'home') {
     return (
       <div className="setup-container">
@@ -196,13 +232,12 @@ Tip:...`
         </button>
 
         <h1>Setup Interview</h1>
-        {/* UN OLD SETUP FORM CODE INGA PODU */}
         <button onClick={() => setCurrentPage('interview')}>Start Interview</button>
       </div>
     )
   }
 
-  // INTERVIEW PAGE - END INTERVIEW BUTTON ADD PANNIRUKEN
+  // INTERVIEW PAGE - VOICE BUTTON ADD PANNIRUKEN 🎤
   if (currentPage === 'interview') {
     return (
       <div className="interview-container">
@@ -212,7 +247,6 @@ Tip:...`
 
         <h1>AI Mock Interview</h1>
 
-        {/* CONVERSATION DISPLAY */}
         <div className="chat-box">
           {conversation.map((msg, index) => (
             <div
@@ -224,7 +258,6 @@ Tip:...`
             </div>
           ))}
 
-          {/* LOADING SKELETON */}
           {loading && (
             <div className="ai-msg skeleton-wrapper">
               <strong>AI: </strong>
@@ -235,7 +268,6 @@ Tip:...`
           )}
         </div>
 
-        {/* END INTERVIEW BUTTON - PUDHUSA */}
         {conversation.length > 2 &&!loading && (
           <button
             onClick={handleEndInterview}
@@ -246,14 +278,22 @@ Tip:...`
           </button>
         )}
 
-        {/* INPUT AREA */}
         <div className="input-area">
           <textarea
-            placeholder="Type your answer..."
+            placeholder="Type your answer or click Speak..."
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
             disabled={loading}
           />
+          
+          <button
+            onClick={startListening}
+            disabled={listening || loading}
+            className="voice-btn"
+          >
+            {listening? '🔴 Listening...' : '🎤 Speak'}
+          </button>
+
           <button
             onClick={handleSubmitAnswer}
             disabled={loading ||!userAnswer}
