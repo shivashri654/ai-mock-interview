@@ -1,214 +1,354 @@
-/* DARK/LIGHT THEME COLORS */
-body.light {
-  --bg: #f0f2f5;
-  --card-bg: white;
-  --text: #1a1a1a;
-  --border: #d9d9d9;
-  --input-bg: white;
-  --btn-bg: #1677ff;
-  --btn-hover: #4096ff;
-}
-
-body.dark {
-  --bg: #141414;
-  --card-bg: #1f1f1f;
-  --text: #e0e0e0;
-  --border: #424242;
-  --input-bg: #2a2a2a;
-  --btn-bg: #1677ff;
-  --btn-hover: #4096ff;
-}
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  transition: all 0.3s ease;
+/* RESET & BASE */
+* {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-/* LOGIN PAGE - CLEAN CENTER CARD */
-.login-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-.login-container h1 {
-  font-size: 2.5rem;
-  margin-bottom: 30px;
-  font-weight: 700;
-}
-
-/* INPUT + BUTTON WRAPPER */
-.login-container input,
-.login-container button {
-  width: 100%;
-  max-width: 350px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  border-radius: 8px;
-  font-size: 16px;
+  padding: 0;
   box-sizing: border-box;
 }
 
-.login-container input {
-  border: 1px solid var(--border);
-  background: var(--input-bg);
-  color: var(--text);
-  outline: none;
-  transition: border 0.2s;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  transition: background 0.3s, color 0.3s;
 }
 
-.login-container input:focus {
-  border: 1px solid var(--btn-bg);
+body.light {
+  background: #f5f5f5;
+  color: #1a1a1a;
 }
 
-.login-container button {
-  background: var(--btn-bg);
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 8px;
-  transition: background 0.2s;
+body.dark {
+  background: #0f0f0f;
+  color: #e5e5e5;
 }
 
-.login-container button:hover {
-  background: var(--btn-hover);
-}
-
-/* THEME TOGGLE BUTTON */
+/* THEME TOGGLE */
 .theme-toggle {
   position: fixed;
   top: 20px;
   right: 20px;
-  padding: 10px 16px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--text);
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
+  font-size: 14px;
   font-weight: 600;
-  z-index: 999;
-  width: auto !important;
-  max-width: none !important;
+  z-index: 100;
 }
 
-/* SETUP + INTERVIEW PAGE KU IDHE STYLE */
-.setup-container, .interview-container {
-  background: var(--card-bg);
-  color: var(--text);
-  min-height: 100vh;
-  padding: 40px 20px;
+body.light .theme-toggle {
+  background: #1a1a1a;
+  color: white;
 }
-/* CHAT MESSAGES */
-.user-msg, .ai-msg {
-  max-width: 70%;
-  padding: 12px 16px;
-  margin: 8px 0;
-  border-radius: 12px;
-  line-height: 1.5;
+
+body.dark .theme-toggle {
+  background: #e5e5e5;
+  color: #1a1a1a;
+}
+
+/* LOGIN & SETUP PAGE */
+.login-container,.setup-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.login-container input,.setup-container input {
+  padding: 14px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  width: 300px;
+}
+
+body.dark .login-container input,body.dark .setup-container input {
+  background: #1a1a1a;
+  border: 2px solid #444;
+  color: white;
+}
+
+.login-container button,.setup-container button {
+  padding: 14px 40px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* FULL SCREEN INTERVIEW UI - MAIN UPDATE 🔥 */
+.interview-container {
+  min-height: 100vh;
+  width: 100%;
+  padding: 20px;
+  padding-top: 80px;
+  display: flex;
+  flex-direction: column;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.interview-container h1 {
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 32px;
+}
+
+.chat-box {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px 20px;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.user-msg,.ai-msg {
+  padding: 24px 28px;
+  border-radius: 20px;
+  max-width: 75%;
+  font-size: 18px;
+  line-height: 1.7;
+  word-wrap: break-word;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .user-msg {
-  background: var(--btn-bg);
+  background: #0084ff;
   color: white;
+  align-self: flex-end;
   margin-left: auto;
-  border-bottom-right-radius: 4px;
 }
 
 .ai-msg {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  margin-right: auto;
-  border-bottom-left-radius: 4px;
+  background: #e5e5e5;
+  color: #1a1a1a;
+  align-self: flex-start;
+  border: 1px solid #ddd;
 }
 
-/* LOADING SKELETON ANIMATION */
+body.dark .ai-msg {
+  background: #2a2a2a;
+  color: #e5e5e5;
+  border: 1px solid #444;
+}
+
+/* SKELETON LOADING */
 .skeleton-wrapper {
-  width: 60%;
+  min-height: 80px;
 }
 
 .skeleton-line {
-  height: 14px;
-  background: linear-gradient(
-    90deg,
-    var(--border) 25%,
-    var(--bg) 50%,
-    var(--border) 75%
-  );
+  height: 16px;
+  background: linear-gradient(90deg, #ddd 25%, #ccc 50%, #ddd 75%);
   background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
+  animation: loading 1.5s infinite;
   border-radius: 4px;
-  margin-bottom: 8px;
+  margin: 8px 0;
 }
 
 .skeleton-line.short {
   width: 60%;
 }
 
-@keyframes skeleton-loading {
+body.dark .skeleton-line {
+  background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes loading {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-/* PAGE FADE-IN ANIMATION */
-.login-container, .setup-container, .interview-container {
-  animation: fadeIn 0.4s ease-in;
+
+/* INPUT AREA - PERIYA SPACE VITUTU 🔥 */
+.input-area {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 30px 0;
+  border-top: 2px solid #ddd;
 }
 
-@keyframes fadeIn {
-  from { 
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
+body.dark .input-area {
+  border-top: 2px solid #333;
 }
 
-/* BUTTON HOVER ANIMATIONS */
-button {
-  transition: all 0.2s ease;
+.input-area textarea {
+  width: 100%;
+  padding: 20px;
+  font-size: 16px;
+  border-radius: 16px;
+  border: 2px solid #ddd;
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
 }
 
-button:hover:not(:disabled) {
+body.dark .input-area textarea {
+  background: #1a1a1a;
+  color: white;
+  border: 2px solid #444;
+}
+
+.input-area textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* BUTTON GROUP - SPACE VITUTU PERUSA 🔥 */
+.button-group {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-end;
+}
+
+.voice-btn,.submit-btn {
+  padding: 16px 40px;
+  font-size: 17px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.voice-btn {
+  background: #10b981;
+  color: white;
+}
+
+.voice-btn:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(16,185,129,0.4);
+}
+
+.voice-btn:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submit-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(59,130,246,0.4);
+}
+
+.submit-btn:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.end-interview-btn {
+  padding: 14px 32px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 15px auto;
+  font-weight: 600;
+  align-self: center;
+  box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+}
+
+.end-interview-btn:hover {
+  background: #dc2626;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
 }
 
-button:active:not(:disabled) {
-  transform: translateY(0px);
+/* SCORE PAGE */
+.score-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
-/* THEME TOGGLE BUTTON KU SPECIAL HOVER */
-.theme-toggle:hover {
-  transform: scale(1.05) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.score-card {
+  background: white;
+  padding: 50px;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 600px;
 }
 
-/* CHAT MESSAGE POP-IN */
-.user-msg, .ai-msg {
-  animation: messagePop 0.3s ease-out;
+body.dark .score-card {
+  background: #1a1a1a;
 }
 
-@keyframes messagePop {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.score-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 30px auto;
+  flex-direction: column;
+  color: white;
 }
 
-/* INPUT FOCUS GLOW */
-input:focus, textarea:focus {
-  border: 1px solid var(--btn-bg) !important;
-  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+.score-number {
+  font-size: 48px;
+  font-weight: 700;
+}
+
+.score-total {
+  font-size: 24px;
+  opacity: 0.9;
+}
+
+.badge-text {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 20px 0;
+}
+
+.feedback-box {
+  text-align: left;
+  background: #f5f5f5;
+  padding: 24px;
+  border-radius: 12px;
+  margin: 30px 0;
+}
+
+body.dark .feedback-box {
+  background: #2a2a2a;
+}
+
+.feedback-box pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.restart-btn {
+  padding: 16px 40px;
+  font-size: 17px;
+  border-radius: 14px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+  margin-top: 20px;
 }
