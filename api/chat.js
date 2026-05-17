@@ -1,7 +1,6 @@
 export default async function handler(req, res) {
   try {
-    const body = await req.json();
-    const { messages } = body;
+    const { messages } = req.body;
 
     const { Groq } = await import('groq-sdk');
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
