@@ -25,7 +25,7 @@ function App() {
     role: '',
     company: '',
     experience: '',
-    topics: '',
+    topics: 'React',
     difficulty: 'Medium'
   })
 
@@ -51,7 +51,7 @@ function App() {
     }
   }
 
-  // AI KU VAAI KUDUKUM FUNCTION 🔊 PUDHUSA
+  // AI KU VAAI KUDUKUM FUNCTION 🔊
   const speakText = (text) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
@@ -68,73 +68,140 @@ function App() {
     }
   }
 
-  // USER VOICE FUNCTION 🎤
+  // USER VOICE FUNCTION 🎤 - UPDATED
   const startListening = () => {
-    if (!('webkitSpeechRecognition' in window)) {
-      alert('Browser la Voice support illa da. Chrome la try pannu')
+    if (!('webkitSpeechRecognition' in window) &&!('SpeechRecognition' in window)) {
+      alert('Voice support illa da. Chrome la HTTPS la try pannu')
       return
     }
 
-    const recognition = new window.webkitSpeechRecognition()
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+
     recognition.lang = 'en-US'
     recognition.continuous = false
-    recognition.interimResults = false
+    recognition.interimResults = true
+    recognition.maxAlternatives = 1
 
-    recognition.onstart = () => setListening(true)
+    recognition.onstart = () => {
+      setListening(true)
+    }
 
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript
-      setUserAnswer(prev => prev? prev + ' ' + transcript : transcript)
-      setListening(false)
+      let finalTranscript = ''
+      let interimTranscript = ''
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript
+        } else {
+          interimTranscript += transcript
+        }
+      }
+
+      if (finalTranscript) {
+        setUserAnswer(prev => prev? prev + ' ' + finalTranscript : finalTranscript)
+      } else if (interimTranscript) {
+        setUserAnswer(prev => {
+          const baseText = prev.split(' [typing...]')[0]
+          return baseText + ' [typing...] ' + interimTranscript
+        })
+      }
     }
 
     recognition.onerror = (event) => {
       console.error('Voice Error:', event.error)
       setListening(false)
-      if(event.error === 'not-allowed') {
-        alert('Mic Permission kuduka sollu da. Site settings la Allow pannu')
+      if (event.error === 'not-allowed') {
+        alert('Mic Permission kuduka sollu da. Browser settings la Allow pannu')
+      } else if (event.error === 'no-speech') {
+        alert('Onnum pesa maatinga da. Marubadiyum try pannu')
       }
     }
 
-    recognition.onend = () => setListening(false)
+    recognition.onend = () => {
+      setListening(false)
+      setUserAnswer(prev => prev.replace(' [typing...] ', ' ').replace(' [typing...]', ''))
+    }
+
     recognition.start()
   }
 
-  // UN OPENAI API CALL FUNCTION INGA PODU - PLACEHOLDER
-  const callOpenAI = async (prompt) => {
-    // NEE UN API KEY + FETCH CODE INGA PODANUM
-    return `Score: 8.5/10
-Strengths:
-- Clear communication skills
-- Good real-world examples
+  // ✅ FINAL: SENTIMENT + CONTENT ANALYSIS + HR SUGGESTION AI
+  const callOpenAI = async (userAnswer, history) => {
+    const lastQuestions = history.filter(m => m.role === 'ai').map(m => m.text).slice(-3)
+    const lastAIQuestion = lastQuestions[lastQuestions.length - 1] || 'general React question'
 
-Weaknesses:
-- Need more technical depth
-- Explain concepts slower
+    const systemPrompt = `You are a senior HR + Tech Interviewer. Analyze the candidate's answer professionally.
 
-Tip: Use STAR method (Situation, Task, Action, Result) for behavioral questions`
+CANDIDATE'S ANSWER: "${userAnswer}"
+LAST QUESTION ASKED: "${lastAIQuestion}"
+INTERVIEW TOPIC: ${interviewConfig.topics || 'React'}
+DIFFICULTY: ${interviewConfig.difficulty}
+
+YOUR TASK:
+1. SENTIMENT & CONTENT ANALYSIS: Check if answer is correct, partial, wrong, vague, or "i dont know"
+2. PROFESSIONAL FEEDBACK:
+   - If wrong/incomplete: Give 2-line correction with correct answer
+   - If partially correct: Appreciate + add missing key points
+   - If correct: Say "Good answer" + 1 pro insight
+3. HR IMPRESSION BOOST: Add 1 line: "HR will be impressed if you mention: [specific tip/example]"
+4. NEXT QUESTION: Ask ONE new ${interviewConfig.difficulty} level question about ${interviewConfig.topics || 'React'}
+5. NEVER repeat: ${JSON.stringify(lastQuestions)}
+
+RESPONSE FORMAT - Keep under 5 lines total:
+[Your feedback + correction]. HR will be impressed if you mention: [tip]. Next question: [new question]
+
+Be professional like ChatGPT. No extra fluff.`
+
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: systemPrompt },
+        ...history.map(m => ({
+            role: m.role === 'ai'? 'assistant' : 'user',
+            content: m.text
+          }))
+        ]
+      })
+    })
+
+    const data = await res.json()
+    return data.reply
   }
 
-  // SUBMIT ANSWER FUNCTION
+  // ✅ UPDATED: SUBMIT ANSWER - REPEAT FIX + SMART AI
   const handleSubmitAnswer = async () => {
-    if (!userAnswer.trim()) return
+    if (!userAnswer.trim() || loading) return
 
     setLoading(true)
-    window.speechSynthesis.cancel() // AI pesa try panna stop pannu
+    window.speechSynthesis.cancel()
 
     const newConversation = [...conversation, { role: 'user', text: userAnswer }]
     setConversation(newConversation)
     setUserAnswer('')
 
-    setTimeout(() => {
-      const aiResponse = 'That\'s a good answer! Next question: Explain React hooks.'
-      setConversation([...newConversation, {
+    try {
+      const aiResponse = await callOpenAI(userAnswer, newConversation)
+
+      const updatedConversation = [...newConversation, {
         role: 'ai',
         text: aiResponse
+      }]
+      setConversation(updatedConversation)
+      speakText(aiResponse)
+    } catch (err) {
+      console.error(err)
+      setConversation([...newConversation, {
+        role: 'ai',
+        text: 'Sorry, error occurred. Next question: What is JSX?'
       }])
-      speakText(aiResponse) // AI AH PESAVA VAI DA 🔥
-      setLoading(false)
-    }, 1500)
+    }
+
+    setLoading(false)
   }
 
   // END INTERVIEW + SCORE FUNCTION
@@ -162,7 +229,16 @@ Weaknesses:...
 Tip:...`
 
     try {
-      const response = await callOpenAI(prompt)
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: prompt }]
+        })
+      })
+      const data = await res.json()
+      const response = data.reply
+
       const scoreMatch = response.match(/Score:\s*(\d+\.?\d*)\/10/i)
       const extractedScore = scoreMatch? scoreMatch[1] : '0'
       setScore(extractedScore)
@@ -261,7 +337,7 @@ Tip:...`
     )
   }
 
-  // INTERVIEW PAGE - FULL SCREEN UI UPDATE PANNIRUKEN 🔥
+  // INTERVIEW PAGE
   if (currentPage === 'interview') {
     return (
       <div className="interview-container">
