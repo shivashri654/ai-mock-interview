@@ -1,22 +1,30 @@
-export async function POST(req) {
-  const { messages } = await req.json()
-  const apiKey = process.env.OPENAI_API_KEY
-  
-  if (!apiKey) {
-    return Response.json({ reply: 'API Key missing in Vercel da. Settings la Environment Variables check pannu.' })
-  }
+import { Groq } from 'groq-sdk';
+import { NextRequest, NextResponse } from 'next/server';
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({ 
-      model: 'gpt-4o-mini', 
-      messages: messages, 
-      temperature: 0.7, 
-      max_tokens: 200 
-    })
-  })
-  
-  const data = await response.json()
-  return Response.json({ reply: data.choices[0].message.content })
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+export async function POST(req: NextRequest) {
+  try {
+    const { messages } = await req.json();
+
+    const chatCompletion = await groq.chat.completions.create({
+      messages: messages,
+      model: 'llama-3.1-8b-instant',
+      temperature: 0.7,
+      max_tokens: 1024,
+    });
+
+    return NextResponse.json({ 
+      reply: chatCompletion.choices[0]?.message?.content || "Sorry, no response" 
+    });
+
+  } catch (error: any) {
+    console.error('Groq API error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to fetch from Groq' }, 
+      { status: 500 }
+    );
+  }
 }
