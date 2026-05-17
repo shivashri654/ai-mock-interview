@@ -1,32 +1,35 @@
-import { Groq } from 'groq-sdk';
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
-
 export default async function handler(req, res) {
-  if (req.method!== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
-    const { messages } = req.body;
+    const body = await req.json();
+    const { messages } = body;
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: messages,
+    const { Groq } = await import('groq-sdk');
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    // IDHU DHAAN MAGIC PROMPT DA 🔥
+    const systemPrompt = {
+      role: "system",
+      content: `You are a professional AI Mock Interviewer.
+
+      RULES:
+      1. If this is the first message, ask: "Hi! Which field or job role are you preparing for? Example: Web Development, Data Science, Marketing, HR, etc."
+      2. Once the user tells the field, act as an expert interviewer for THAT SPECIFIC FIELD ONLY.
+      3. Ask one question at a time. Mix technical and HR questions.
+      4. After user answers, give short feedback: "Good answer" or "You can add this point..." then ask the next question.
+      5. Keep replies under 3 lines. Be encouraging.
+      6. NEVER ask about React, Python, or any specific tech unless the user mentioned that field.
+
+      Start the interview now.`
+    };
+
+    const chat = await groq.chat.completions.create({
+      messages: [systemPrompt,...messages],
       model: 'llama-3.1-8b-instant',
-      temperature: 0.7,
-      max_tokens: 1024,
     });
 
-    return res.status(200).json({
-      reply: chatCompletion.choices[0]?.message?.content || "Sorry, no response"
-    });
-
+    return res.status(200).json({ reply: chat.choices[0].message.content });
   } catch (error) {
-    console.error('Groq API error:', error);
-    return res.status(500).json({
-      error: error.message || 'Failed to fetch from Groq'
-    });
+    console.error(error);
+    return res.status(500).json({ error: error.message });
   }
 }
