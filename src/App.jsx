@@ -128,43 +128,52 @@ function App() {
     recognition.start()
   }
 
-  // ✅ FINAL: SENTIMENT + CONTENT ANALYSIS + HR SUGGESTION AI
+  // ✅ PUDHU FUNCTION: INTERVIEW START PANNA
+  const handleStartInterview = async () => {
+    setConversation([]) // 1. Pazhaya chat ah kalichiru
+    setCurrentPage('interview') // 2. Interview page ku po
+    await startAIInterview() // 3. AI ku "hi" anupi start pannu
+  }
+
+  // ✅ PUDHU FUNCTION: AI AH EZHUPPA
+  const startAIInterview = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: 'hi' }] // AI ku "hi" anuprom
+        })
+      })
+      const data = await res.json()
+      const aiFirstMsg = { role: 'ai', text: data.reply }
+      setConversation([aiFirstMsg]) // AI oda first msg ah kaatu
+      speakText(data.reply) // AI pesa vaikkum
+    } catch (err) {
+      console.error(err)
+      setConversation([{
+        role: 'ai',
+        text: 'Hi! Which field or job role are you preparing for? Example: Web Development, Data Science, Marketing, HR, etc.'
+      }])
+    }
+    setLoading(false)
+  }
+
+  // ✅ UPDATED: SENTIMENT + CONTENT ANALYSIS + HR SUGGESTION AI
   const callOpenAI = async (userAnswer, history) => {
     const lastQuestions = history.filter(m => m.role === 'ai').map(m => m.text).slice(-3)
-    const lastAIQuestion = lastQuestions[lastQuestions.length - 1] || 'general React question'
-
-    const systemPrompt = `You are a senior HR + Tech Interviewer. Analyze the candidate's answer professionally.
-
-CANDIDATE'S ANSWER: "${userAnswer}"
-LAST QUESTION ASKED: "${lastAIQuestion}"
-INTERVIEW TOPIC: ${interviewConfig.topics || 'React'}
-DIFFICULTY: ${interviewConfig.difficulty}
-
-YOUR TASK:
-1. SENTIMENT & CONTENT ANALYSIS: Check if answer is correct, partial, wrong, vague, or "i dont know"
-2. PROFESSIONAL FEEDBACK:
-   - If wrong/incomplete: Give 2-line correction with correct answer
-   - If partially correct: Appreciate + add missing key points
-   - If correct: Say "Good answer" + 1 pro insight
-3. HR IMPRESSION BOOST: Add 1 line: "HR will be impressed if you mention: [specific tip/example]"
-4. NEXT QUESTION: Ask ONE new ${interviewConfig.difficulty} level question about ${interviewConfig.topics || 'React'}
-5. NEVER repeat: ${JSON.stringify(lastQuestions)}
-
-RESPONSE FORMAT - Keep under 5 lines total:
-[Your feedback + correction]. HR will be impressed if you mention: [tip]. Next question: [new question]
-
-Be professional like ChatGPT. No extra fluff.`
 
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: [
-          { role: 'system', content: systemPrompt },
-        ...history.map(m => ({
+         ...history.map(m => ({
             role: m.role === 'ai'? 'assistant' : 'user',
             content: m.text
-          }))
+          })),
+          { role: 'user', content: userAnswer }
         ]
       })
     })
@@ -173,7 +182,7 @@ Be professional like ChatGPT. No extra fluff.`
     return data.reply
   }
 
-  // ✅ UPDATED: SUBMIT ANSWER - REPEAT FIX + SMART AI
+  // ✅ UPDATED: SUBMIT ANSWER
   const handleSubmitAnswer = async () => {
     if (!userAnswer.trim() || loading) return
 
@@ -197,7 +206,7 @@ Be professional like ChatGPT. No extra fluff.`
       console.error(err)
       setConversation([...newConversation, {
         role: 'ai',
-        text: 'Sorry, error occurred. Next question: What is JSX?'
+        text: 'Sorry, error occurred. Please try again.'
       }])
     }
 
@@ -323,7 +332,7 @@ Tip:...`
     )
   }
 
-  // HOME/SETUP PAGE
+  // HOME/SETUP PAGE - ✅ IDHU DHAAN MAATHUNOM
   if (currentPage === 'home') {
     return (
       <div className="setup-container">
@@ -332,7 +341,7 @@ Tip:...`
         </button>
 
         <h1>Setup Interview</h1>
-        <button onClick={() => setCurrentPage('interview')}>Start Interview</button>
+        <button onClick={handleStartInterview}>Start Interview</button>
       </div>
     )
   }
